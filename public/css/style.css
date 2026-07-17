@@ -413,3 +413,7 @@ textarea { resize: vertical; }
   background: var(--saffron);
   color: var(--teal-dark);
 }
+/* إصلاح إخفاء النوافذ المنبثقة بشكل صحيح */
+.sheet[hidden] {
+  display: none !important;
+}
