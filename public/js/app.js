@@ -249,6 +249,7 @@ async function deleteAd(id) {
 
 // ---------- التحكم بالنوافذ (sheets) ----------
 function showSheet(id) {
+  document.querySelectorAll('.sheet').forEach((s) => (s.hidden = true));
   document.getElementById(id).hidden = false;
 }
 function closeSheet(id) {
