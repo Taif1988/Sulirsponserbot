@@ -1,0 +1,99 @@
+:root {
+  --paper: #F6F1E4;
+  --ink: #23291F;
+  --teal: #10555A;
+  --teal-dark: #0A3A3E;
+  --saffron: #E2A335;
+  --rose: #B4542A;
+  --line: rgba(35, 41, 31, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Cairo', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+h1 { font-family: 'Tajawal', sans-serif; }
+
+.login-box {
+  max-width: 320px;
+  margin: 100px auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.login-box h1 { font-size: 18px; color: var(--teal-dark); margin-bottom: 20px; }
+.login-box input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  margin-bottom: 12px;
+  font-family: 'Cairo', sans-serif;
+}
+.login-box button {
+  width: 100%;
+  padding: 10px;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.error { color: var(--rose); font-size: 13px; margin-top: 10px; }
+
+.dashboard { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+.admin-header h1 { color: var(--teal-dark); }
+
+.status-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.status-tab {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+}
+.status-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+
+.admin-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.admin-thumb {
+  width: 80px; height: 80px;
+  border-radius: 10px;
+  background: var(--paper) center/cover no-repeat;
+  flex-shrink: 0;
+}
+.admin-info { flex: 1; }
+.admin-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+.admin-desc { font-size: 13px; color: rgba(35,41,31,0.7); margin-bottom: 6px; }
+.admin-meta { font-size: 12px; color: rgba(35,41,31,0.5); margin-bottom: 10px; }
+
+.admin-actions { display: flex; gap: 8px; }
+.btn-approve, .btn-reject {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  font-size: 13px;
+}
+.btn-approve { background: #D9F0DA; color: #1D6B2C; }
+.btn-reject { background: #F6D6D2; color: #A32D1B; }
+
+.empty { text-align: center; padding: 60px 0; color: rgba(35,41,31,0.5); }
