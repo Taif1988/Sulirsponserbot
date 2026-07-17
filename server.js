@@ -72,12 +72,11 @@ app.get('/api/categories', (req, res) => {
 // عرض الإعلانات المعتمدة فقط، مع فلترة اختيارية
 app.get('/api/ads', (req, res) => {
   const db = readDb();
-  const { type, category, q } = req.query;
+  const { type, q } = req.query;
 
   let ads = db.ads.filter((ad) => ad.status === 'approved');
 
   if (type) ads = ads.filter((ad) => ad.type === type);
-  if (category) ads = ads.filter((ad) => ad.category === category);
   if (q) {
     const query = q.trim().toLowerCase();
     ads = ads.filter(
@@ -93,9 +92,9 @@ app.get('/api/ads', (req, res) => {
 
 // نشر إعلان جديد (يبقى قيد المراجعة لحد ما الأدمن يوافق)
 app.post('/api/ads', requireTelegramUser, (req, res) => {
-  const { type, title, description, price, category, image } = req.body;
+const { type, title, description, price, image } = req.body;
 
-  if (!type || !title || !description || !category) {
+  if (!type || !title || !description) {
     return res.status(400).json({ error: 'الرجاء تعبئة جميع الحقول المطلوبة' });
   }
 
@@ -106,7 +105,6 @@ app.post('/api/ads', requireTelegramUser, (req, res) => {
     title,
     description,
     price: price || null,
-    category,
     image: image || null,
     posterId: req.tgUser.id,
     posterUsername: req.tgUser.username || null,
