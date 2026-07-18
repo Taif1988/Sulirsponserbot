@@ -21,7 +21,7 @@ if (!BOT_TOKEN) {
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '8mb' })); // نسمح بحجم أكبر شوي لأجل الصور base64
+app.use(express.json({ limit: '8mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const bot = new Telegraf(BOT_TOKEN);
@@ -29,6 +29,17 @@ const bot = new Telegraf(BOT_TOKEN);
 // ------------------- أوامر البوت -------------------
 
 bot.start((ctx) => {
+  const db = readDb();
+  const exists = db.users.find((u) => u.id === ctx.from.id);
+  if (!exists) {
+    db.users.push({
+      id: ctx.from.id,
+      username: ctx.from.username || null,
+      firstName: ctx.from.first_name || ''
+    });
+    writeDb(db);
+  }
+
   ctx.reply(
     'أهلاً بيك 👋\nهذا بوت إعلانات الوظائف والبيع.\nاضغط الزر تحت لفتح التطبيق:',
     Markup.inlineKeyboard([
@@ -60,16 +71,24 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// ------------------- API: التصنيفات -------------------
-
-app.get('/api/categories', (req, res) => {
+async function broadcastNewAd(ad) {
   const db = readDb();
-  res.json(db.categories);
-});
+  const typeLabel = ad.type === 'job' ? 'وظيفة جديدة 💼' : 'إعلان بيع جديد 🛍️';
+  const message = `📢 ${typeLabel}\n\n*${ad.title}*\n${ad.price ? `💰 ${ad.price}\n` : ''}\nافتح التطبيق للاطلاع على التفاصيل.`;
+
+  for (const user of db.users) {
+    if (user.id === ad.posterId) continue;
+    try {
+      await bot.telegram.sendMessage(user.id, message, { parse_mode: 'Markdown' });
+    } catch (e) {
+      // المستخدم ممكن يكون سكر البوت أو حظره، نتجاهل ونكمل
+    }
+    await new Promise((resolve) => setTimeout(resolve, 60));
+  }
+}
 
 // ------------------- API: الإعلانات (عامة) -------------------
 
-// عرض الإعلانات المعتمدة فقط، مع فلترة اختيارية
 app.get('/api/ads', (req, res) => {
   const db = readDb();
   const { type, q } = req.query;
@@ -82,7 +101,8 @@ app.get('/api/ads', (req, res) => {
     ads = ads.filter(
       (ad) =>
         ad.title.toLowerCase().includes(query) ||
-        ad.description.toLowerCase().includes(query)
+        ad.description.toLowerCase().includes(query) ||
+        (ad.price && ad.price.toLowerCase().includes(query))
     );
   }
 
@@ -90,9 +110,8 @@ app.get('/api/ads', (req, res) => {
   res.json(ads);
 });
 
-// نشر إعلان جديد (يبقى قيد المراجعة لحد ما الأدمن يوافق)
 app.post('/api/ads', requireTelegramUser, (req, res) => {
-const { type, title, description, price, image } = req.body;
+  const { type, title, description, price, image } = req.body;
 
   if (!type || !title || !description) {
     return res.status(400).json({ error: 'الرجاء تعبئة جميع الحقول المطلوبة' });
@@ -129,7 +148,6 @@ const { type, title, description, price, image } = req.body;
   res.json({ success: true, ad: newAd });
 });
 
-// عرض إعلانات المستخدم نفسه (بكل الحالات)
 app.get('/api/my-ads', requireTelegramUser, (req, res) => {
   const db = readDb();
   const myAds = db.ads
@@ -138,7 +156,6 @@ app.get('/api/my-ads', requireTelegramUser, (req, res) => {
   res.json(myAds);
 });
 
-// حذف إعلان (فقط صاحبه يقدر يحذفه)
 app.delete('/api/ads/:id', requireTelegramUser, (req, res) => {
   const db = readDb();
   const ad = db.ads.find((a) => a.id === req.params.id);
@@ -181,6 +198,8 @@ app.post('/api/admin/ads/:id/approve', requireAdmin, (req, res) => {
   bot.telegram
     .sendMessage(ad.posterId, `✅ تم قبول إعلانك "${ad.title}" وهو الآن ظاهر للجميع.`)
     .catch((e) => console.error('فشل إشعار المستخدم:', e.message));
+
+  broadcastNewAd(ad).catch((e) => console.error('فشل الإشعار الجماعي:', e.message));
 
   res.json({ success: true });
 });
