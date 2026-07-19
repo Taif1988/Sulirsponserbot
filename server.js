@@ -203,6 +203,16 @@ app.post('/api/admin/ads/:id/approve', requireAdmin, (req, res) => {
 
   res.json({ success: true });
 });
+app.delete('/api/admin/ads/:id', requireAdmin, (req, res) => {
+  const db = readDb();
+  const ad = db.ads.find((a) => a.id === req.params.id);
+  if (!ad) return res.status(404).json({ error: 'الإعلان غير موجود' });
+
+  db.ads = db.ads.filter((a) => a.id !== req.params.id);
+  writeDb(db);
+
+  res.json({ success: true });
+});
 
 app.post('/api/admin/ads/:id/reject', requireAdmin, (req, res) => {
   const db = readDb();
